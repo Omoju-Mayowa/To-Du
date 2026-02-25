@@ -1,0 +1,29 @@
+[
+  {
+    "id": "task-a49c84939dbc4fe8b30dd456f0aea112",
+    "title": "First task",
+    "body": "Just tesing",
+    "priority": "low",
+    "status": "pending",
+    "userID": "user-44da9d98-88cf-4407-81ee-cf64699b1de1",
+    "createdAt": "2026-02-24T08:54:41.042Z"
+  },
+  {
+    "id": "task-7460b1e0874b45e7b22f08aa82eb8008",
+    "title": "Cook at 7pm",
+    "body": "Make sure to cook Rice and Beans and Eat with the stew and meat",
+    "priority": "medium",
+    "status": "pending",
+    "userID": "user-c99c27e6-912d-42e4-9072-6244945f5f7b",
+    "createdAt": "2026-02-24T09:49:37.849Z"
+  },
+  {
+    "id": "task-5953df46908243999657fd2b13d79573",
+    "title": "Wash Dishes",
+    "body": "Wash the dishes so mum doesn't kill you 🤧",
+    "priority": "utmost",
+    "status": "pending",
+    "userID": "user-cf3077ab-b997-4f9e-9b1d-a7be92282feb",
+    "createdAt": "2026-02-24T10:11:00.890Z"
+  }
+]
