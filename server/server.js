@@ -7,6 +7,8 @@ import taskRoutes from "./routes/taskRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+import argon2 from "argon2";
+
 
 app.use(express.json())
 
