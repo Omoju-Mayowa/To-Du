@@ -73,7 +73,6 @@ To-Du is a backend task management system built with Node.js and Express. It pro
 
 Directory                                                   Purpose
 
----
 
 .
 ├── ./README.md                                             (Documentation)
