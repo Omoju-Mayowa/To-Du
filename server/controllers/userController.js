@@ -104,9 +104,8 @@ const loginUser = async (req, res, next) => {
       id: user.id,
       userName: user.userName,
       email: user.email,
-      token: token
+      token: token,
     });
-    
   } catch (err) {
     const message = new HttpError(err.message, 500);
     return next(message);

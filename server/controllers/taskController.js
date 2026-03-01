@@ -136,35 +136,33 @@ const sendReminder = async (req, res, next) => {
     const tasks = await readTasks();
     const users = await readUsers();
     const { id } = req.params;
-    let message
-    let eMessage
+    let message;
+    let eMessage;
 
     const task = tasks.find((t) => t.id === id);
 
     if (!task) {
-      eMessage = new HttpError("Task not found.", 404)
+      eMessage = new HttpError("Task not found.", 404);
       return next(eMessage);
     }
 
     // Ensure user owns the task
     if (task.userID !== req.user.id) {
-      eMessage = new HttpError("Unauthorized.", 403)
+      eMessage = new HttpError("Unauthorized.", 403);
       return next(eMessage);
     }
 
     const user = users.find((u) => u.id === task.userID);
 
     if (!user) {
-      eMessage = new HttpError("User not found.", 404)
+      eMessage = new HttpError("User not found.", 404);
       return next(eMessage);
     }
 
-    const limit = getReminderLimit(task.priority)
+    const limit = getReminderLimit(task.priority);
     // Optional: reset next reminder time
     const intervalHours = 24 / getReminderLimit(task.priority);
-    task.nextReminderAt = new Date(
-      Date.now() + intervalHours * 60 * 60 * 1000
-    );
+    task.nextReminderAt = new Date(Date.now() + intervalHours * 60 * 60 * 1000);
     // Send email immediately
     await sendEmail({
       to: user.email,
@@ -181,12 +179,10 @@ const sendReminder = async (req, res, next) => {
       `,
     });
 
-
     await writeTasks(tasks);
-    
-    message = new HttpMessage("Reminder sent successfully.", 200, null)
-    return res.status(200).json(message);
 
+    message = new HttpMessage("Reminder sent successfully.", 200, null);
+    return res.status(200).json(message);
   } catch (err) {
     return next(new HttpError(err.message, 500));
   }
