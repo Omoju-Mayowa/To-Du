@@ -9,21 +9,13 @@
     "createdAt": "2026-02-24T08:54:41.042Z"
   },
   {
-    "id": "task-7460b1e0874b45e7b22f08aa82eb8008",
-    "title": "Cook at 7pm",
-    "body": "Make sure to cook Rice and Beans and Eat with the stew and meat",
-    "priority": "medium",
-    "status": "pending",
-    "userID": "user-c99c27e6-912d-42e4-9072-6244945f5f7b",
-    "createdAt": "2026-02-24T09:49:37.849Z"
-  },
-  {
-    "id": "task-5953df46908243999657fd2b13d79573",
-    "title": "Wash Dishes",
-    "body": "Wash the dishes so mum doesn't kill you 🤧",
+    "id": "task-8ce463506fca4aa18ceec0bf314956f3",
+    "title": "Take your medicine",
+    "body": "Wash dirty clothes",
     "priority": "utmost",
     "status": "pending",
-    "userID": "user-cf3077ab-b997-4f9e-9b1d-a7be92282feb",
-    "createdAt": "2026-02-24T10:11:00.890Z"
+    "userID": 2,
+    "createdAt": "2026-02-28T23:47:48.173Z",
+    "nextReminderAt": "2026-03-01T02:29:24.696Z"
   }
 ]

@@ -1,23 +1,15 @@
-import Nodemailer from "nodemailer";
-import { MailtrapTransport } from "mailtrap"
-import "dotenv/config"
+import { transport, sender } from "./mailer.js";
 
-const TOKEN = process.env.TOKEN || '';
-console.log("MAILTRAP TOKEN: ", TOKEN ? "Loaded" : "Missing")
-
-const transport = Nodemailer.createTransport(
-  MailtrapTransport({
-    token: TOKEN,
+const sendEmail = async ({ to, subject, html }) => {
+  if (!to || !subject || !html) {
+    throw new Error("Missing email params")
+  }
+  await transport.sendMail({
+    from: sender.address,
+    to,
+    subject,
+    html
   })
-);
+}
 
-const sender = {
-  address: "hello@demomailtrap.co",
-  name: "Your To-Du App",
-};
-
-const recipients = [
-  "omojumayowa@gmail.com",
-];
-
-export { transport, recipients, sender }
+export default sendEmail
