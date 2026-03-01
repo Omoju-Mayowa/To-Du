@@ -72,8 +72,8 @@ To-Du is a backend task management system built with Node.js and Express. It pro
 ```
 
 .
-├── ./README.md (Documentation)
-├── ./TODO.md (Project TODOs)
+├── ./README.md                                             (Documentation)
+├── ./TODO.md                                               (Project TODOs)
 ├── ./controllers
 │   ├── ./controllers/taskController.js                     (Logic Controller for Tasks Endpoints)
 │   └── ./controllers/userController.js                     (Logic Controller for User Endpoints)
