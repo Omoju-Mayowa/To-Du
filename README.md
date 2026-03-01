@@ -71,6 +71,10 @@ To-Du is a backend task management system built with Node.js and Express. It pro
 ## Project Structure
 ```
 
+Directory                                                   Purpose
+
+---
+
 .
 ├── ./README.md                                             (Documentation)
 ├── ./TODO.md                                               (Project TODOs)
