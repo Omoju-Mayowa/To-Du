@@ -58,27 +58,46 @@ const createTask = async (req, res, next) => {
   return res.status(response.statusCode).json(response.data);
 };
 
+const fetchAllTasks = async (req, res, next) => {
+  try {
+    let tasks = await readTasks();
+    
+    const response = new HttpMessage("All Tasks Fetched Successfully.", 200, tasks);
+    return res.status(response.statusCode).json(response.data);
+  } catch {
+    
+  }
+}
+
 const fetchTasks = async (req, res, next) => {
-  const { status, priority, search } = req.query;
-  let tasks = await readTasks();
-
-  if (search) {
-    const searchT = search.toLowerCase();
-    tasks = tasks.filter(
-      (t) => t.title && t.title.toLowerCase().includes(searchT),
-    );
+  try {
+    const { status, priority, search } = req.query;
+    let tasks = await readTasks();
+    let currentUserID = req.user?.id;
+  
+    if (search) {
+      const searchT = search.toLowerCase();
+      tasks = tasks.filter(
+        (t) => t.title && t.title.toLowerCase().includes(searchT) && t.userID === currentUserID,
+      );
+    }
+  
+    if (priority) {
+      tasks = tasks.filter((t) => t.priority === priority && t.userID === currentUserID);
+    }
+  
+    if (status) {
+      tasks = tasks.filter((t) => t.status === status && t.userID === currentUserID);
+    }
+  
+    tasks = tasks.filter((t) => t.userID === currentUserID);
+ 
+    const response = new HttpMessage("Task Fetched Sucessfully", 200, tasks);
+    return res.status(response.statusCode).json(response.data);
+  } catch(err) {
+      const error = new HttpError("An error occurred while fetching tasks.");
+      return next(error);
   }
-
-  if (priority) {
-    tasks = tasks.filter((t) => t.priority === priority);
-  }
-
-  if (status) {
-    tasks = tasks.filter((t) => t.status === status);
-  }
-
-  const response = new HttpMessage("Task Fetched Sucessfully", 200, tasks);
-  return res.status(response.statusCode).json(response.data);
 };
 
 const fetchTask = async (req, res, next) => {
@@ -108,9 +127,8 @@ const updateTask = async (req, res, next) => {
 
 const deleteTask = async (req, res, next) => {
   const { id } = req.params;
-  console.log(id);
   let tasks = await readTasks();
-
+    
   const taskExists = tasks.find((t) => t.id === id);
 
   if (!taskExists) {
@@ -168,20 +186,22 @@ const sendReminder = async (req, res, next) => {
       to: user.email,
       subject: "Manual Task Reminder",
       html: `
-        <h1>${task.title}</h1>
-        <p>Have you already forgotten about this task of yours? It is of <b style="color: red;">${task.priority}</b> priority.</p>
-        <span>You even described it as:
-            <p><${task.body}.</p>
-        </span>
-        <p>Don't forget to complete it beforethe end of the day.</p>
-        <p>You set ${limit} hours reminder</p>
-        <p>Next reminder will be sent in ${intervalHours} hours.</p>
+      <h1>${task.title}</h1>
+      <p>Have you already forgotten about this task of yours? It is of <b style="color: red;">${task.priority}</b> priority.</p>
+      <span>You even described it as:
+      <p><${task.body}.</p>
+      </span>
+      <p>Don't forget to complete it beforethe end of the day.</p>
+      <p>You set ${limit} hours reminder</p>
+      <p>Next reminder will be sent in ${intervalHours} hours.</p>
       `,
     });
-
+    
     await writeTasks(tasks);
-
+    
     message = new HttpMessage("Reminder sent successfully.", 200, null);
+    console.log("Email sent sucessfully.")
+
     return res.status(200).json(message);
   } catch (err) {
     return next(new HttpError(err.message, 500));
@@ -196,4 +216,5 @@ export {
   deleteTask,
   taskStatus,
   sendReminder,
+  fetchAllTasks
 };

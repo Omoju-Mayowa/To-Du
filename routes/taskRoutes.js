@@ -8,20 +8,25 @@ import {
   updateTask,
   deleteTask,
   taskStatus,
-  sendReminder
+  sendReminder,
+  fetchAllTasks
 } from "../controllers/taskController.js";
+import { taskLimiter } from "../middleware/rateLimiter.js";
+
 const router = Router();
 
+
+
 // POST ROUTES
-router.post("/", auth, asyncHandler(createTask));
-router.post("/:id/reminder", auth, asyncHandler(sendReminder));
+router.post("/", auth, taskLimiter, asyncHandler(createTask));
+router.post("/:id/reminder", auth, taskLimiter, asyncHandler(sendReminder));
 // GET ROUTES
-router.get("/", auth, asyncHandler(fetchTasks));
-router.get("/:id", auth, asyncHandler(fetchTask));
+router.get("/", auth, taskLimiter, asyncHandler(fetchTasks));
+router.get("/:id", auth, taskLimiter, asyncHandler(fetchTask));
 // PATCH ROUTES
-router.patch("/:id", auth, asyncHandler(updateTask));
-router.patch("/:id/status", auth, asyncHandler(taskStatus));
+router.patch("/:id", auth, taskLimiter, asyncHandler(updateTask));
+router.patch("/:id/status", auth, taskLimiter, asyncHandler(taskStatus));
 // DELETE ROUTED
-router.delete("/:id", auth, asyncHandler(deleteTask));
+router.delete("/:id", auth, taskLimiter, asyncHandler(deleteTask));
 
 export default router;
