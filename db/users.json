@@ -9,7 +9,9 @@
     "id": 2,
     "userName": "boy",
     "email": "n0x.nyx.16@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$9l+TjtH2oZ6kCouMq41iiw$elx5IMkgAepzSEQQKnRzNcOTjhi8mWvwcyE/dbxmENM"
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$9l+TjtH2oZ6kCouMq41iiw$elx5IMkgAepzSEQQKnRzNcOTjhi8mWvwcyE/dbxmENM",
+    "otp": "3920",
+    "otpExpiresAt": "2026-03-13T22:54:13.339Z"
   },
   {
     "id": 4,

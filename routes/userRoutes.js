@@ -1,21 +1,21 @@
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { me, editUser, registerUser, loginUser, logout, forgotPassword, resetPassword, allUsers } from '../controllers/userController.js'
-import auth from '../middleware/authMiddleware.js'
-import { loginLimiter, userLimiter } from "../middleware/rateLimiter.js";
+import { me, editUser, registerUser, loginUser, logout, forgotPassword, resetPassword, allUsers } from '../controllers/userController.js';
+import auth from '../middleware/authMiddleware.js';
+import admin from '../middleware/adminMiddleware.js';
 
-const router = Router()
+const router = Router();
 
 // GET ROUTES
-router.get('/', userLimiter, asyncHandler(allUsers))
-router.get('/me', auth, userLimiter, asyncHandler(me))
+router.get('/', auth, admin, asyncHandler(allUsers))
+router.get('/me', auth, asyncHandler(me))
 // PATCH ROUTES
-router.patch('/edit-me', auth, userLimiter, editUser)
+router.patch('/edit-me', auth, asyncHandler(editUser))
 // POST ROUTES
-router.post('/register', loginLimiter, asyncHandler(registerUser))
-router.post('/login', loginLimiter, asyncHandler(loginUser))
-router.post('/logout', auth, userLimiter, logout)
-router.post('/forgot-password', userLimiter, asyncHandler(forgotPassword))
-router.post('/reset-password', userLimiter, asyncHandler(resetPassword))
+router.post('/register', asyncHandler(registerUser))
+router.post('/login', asyncHandler(loginUser))
+router.post('/logout', auth, asyncHandler(logout))
+router.post('/forgot-password', asyncHandler(forgotPassword))
+router.post('/reset-password', asyncHandler(resetPassword))
 
-export default router
+export default router;

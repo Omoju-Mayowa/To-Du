@@ -3,9 +3,9 @@
  
  ## Email Feature (Future Use)
  
- - [ ] Implement Email Functionality
- - [ ] Add dynamic subject and body
- - [ ] Add HTML Template Support
+ - [ x ] Implement Email Functionality
+ - [ x ] Add dynamic subject and body
+ - [ x ] Add HTML Template Support
  - [ ] Add attachment support
  
  ```js

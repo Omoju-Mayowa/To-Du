@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import HttpError from "../models/errorModel.js";
+import { environment } from "../environment.js";
 
-const secret = process.env.JWT_SECRET;
+const secret = environment.JWT_SECRET;
 
 const auth = (req, res, next) => {
   const token = req.cookies?.accessToken;
