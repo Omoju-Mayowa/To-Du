@@ -12,6 +12,7 @@ export const reminderJob = async () => {
 
     for (const task of tasks) {
       const limit = getReminderLimit(task.priority);
+      const intervalHours = 24 / getReminderLimit(task.priority);
       if (task.status !== "pending") continue;
 
       if (!task.nextReminderAt) continue;
@@ -37,7 +38,6 @@ export const reminderJob = async () => {
         console.log("Email sent sucessfully.");
         console.log(limit, intervalHours, user.id);
 
-        const intervalHours = 24 / getReminderLimit(task.priority);
 
         task.nextReminderAt = new Date(
           Date.now() + intervalHours * 60 * 60 * 1000,

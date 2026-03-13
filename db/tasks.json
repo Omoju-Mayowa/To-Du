@@ -1,13 +1,14 @@
 [
   {
     "id": "task-2faf2bec0bad432b9b3d91861f438a13",
-    "title": "Eat porridge",
+    "title": "Fry Egg",
     "body": "nothing else",
-    "priority": "utmost",
-    "status": "pending",
+    "priority": "low",
+    "status": "cancelled",
     "userID": 2,
     "createdAt": "2026-03-01T17:07:13.247Z",
-    "nextReminderAt": "2026-03-02T10:58:40.756Z"
+    "nextReminderAt": "2026-03-14T22:03:52.992Z",
+    "updatedAt": "2026-03-13T22:34:51.439Z"
   },
   {
     "id": "task-7bcf7087b7014afe80a74f0a6157de96",
@@ -17,7 +18,7 @@
     "status": "pending",
     "userID": 4,
     "createdAt": "2026-03-02T09:05:35.200Z",
-    "nextReminderAt": "2026-03-02T11:05:35.200Z"
+    "nextReminderAt": "2026-03-04T20:24:45.171Z"
   },
   {
     "id": "task-fb8c17c5bbb341ee865b8da31a8d7630",
@@ -25,8 +26,8 @@
     "body": "Cook them together and make sure to use it as a meal",
     "priority": "high",
     "status": "pending",
-    "userID": 4,
+    "userID": 2,
     "createdAt": "2026-03-02T09:05:54.834Z",
-    "nextReminderAt": "2026-03-02T13:29:30.483Z"
+    "nextReminderAt": "2026-03-04T22:46:14.473Z"
   }
 ]

@@ -1,5 +1,6 @@
 const PRIORITIES = ['low', 'medium', 'high', 'utmost']
-const TASK_STATUS = ['pending', 'completed']
+const VALID_STATUSES = ['pending', 'completed', 'cancelled']
+const TASK_STATUS = ['pending', 'completed', 'cancelled']
 const REMINDERS_PER_DAY = {
   low: 1,
   medium: 3,
@@ -8,4 +9,4 @@ const REMINDERS_PER_DAY = {
 }
 
 
-export { PRIORITIES, TASK_STATUS, REMINDERS_PER_DAY }
+export { PRIORITIES, TASK_STATUS, REMINDERS_PER_DAY, VALID_STATUSES }
