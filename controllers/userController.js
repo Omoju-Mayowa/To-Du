@@ -252,22 +252,6 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-// ----------------------------------------------------------------
-// ADMIN
-// ----------------------------------------------------------------
-
-const allUsers = async (req, res, next) => {
-  try {
-    const users = await readUsers();
-    const safeUsers = users.map(safeUser);
-
-    const response = new HttpMessage("Users fetched successfully.", 200, safeUsers);
-    return res.status(response.statusCode).json(response.data);
-  } catch (err) {
-    return next(new HttpError(err.message, 500));
-  }
-};
-
 export {
   me,
   editUser,
@@ -276,5 +260,4 @@ export {
   logout,
   forgotPassword,
   resetPassword,
-  allUsers,
 };

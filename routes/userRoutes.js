@@ -7,7 +7,6 @@ import admin from '../middleware/adminMiddleware.js';
 const router = Router();
 
 // GET ROUTES
-router.get('/', auth, admin, asyncHandler(allUsers))
 router.get('/me', auth, asyncHandler(me))
 // PATCH ROUTES
 router.patch('/edit-me', auth, asyncHandler(editUser))

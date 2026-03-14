@@ -54,17 +54,6 @@ const createTask = async (req, res, next) => {
   return res.status(response.statusCode).json(response.data);
 };
 
-const fetchAllTasks = async (req, res, next) => {
-  try {
-    let tasks = await readTasks();
-    
-    const response = new HttpMessage("All Tasks Fetched Successfully.", 200, tasks);
-    return res.status(response.statusCode).json(response.data);
-  } catch {
-    
-  }
-}
-
 const fetchTasks = async (req, res, next) => {
   try {
     const { status, priority, search } = req.query;
