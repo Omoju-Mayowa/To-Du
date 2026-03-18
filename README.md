@@ -2,37 +2,38 @@
 
 ## Project Overview
 
-To-Du is a backend task management system built with Node.js and Express. It provides a secure, fully-featured RESTful API that allows users to register, authenticate, and manage personal tasks — complete with a priority-based email reminder system that runs automatically in the background.
+To-Du is a backend task management system built with Node.js and Express. It provides a secure, fully-featured RESTful API that allows users to register, authenticate, and manage personal tasks — complete with a priority-based email reminder system that won't let you forget that thing you've been putting off since January. It uses a local JSON file to store users and tasks data, because sometimes simplicity is a flex.
 
 ---
 
 ## Features
 
 ### Authentication & Authorization
-- User registration with secure password hashing (Argon2id)
+- User registration with secure password hashing (Argon2id — because MD5 is a cry for help)
 - User login with JWT-based authentication
-- JWT stored in HTTP-only cookies (XSS-safe)
-- `SameSite: Strict` cookie policy (CSRF-safe)
-- Protected routes using authentication middleware
-- Role-based access control (`user` | `admin`)
-- Logout support with cookie invalidation
+- Access token (15 minutes) + Refresh token (7 days) — yes, we upgraded. You're welcome.
+- Both tokens stored in HTTP-only cookies (XSS can't touch this)
+- `SameSite: Strict` cookie policy (CSRF tried it. CSRF lost.)
+- Auth middleware that silently rotates your access token when it expires — no interruptions, no drama
+- Refresh token stored in the DB so we can actually revoke it (revolutionary concept)
+- Logout support that nukes both cookies AND the DB record. Clean sweep.
 
 ### User Management
 - Fetch authenticated user profile
 - Edit user details (name, email, password)
-- Password reset via 4-digit OTP sent to email (expires in 10 minutes)
-- Admin-only: fetch all users
+- Password reset via 4-digit OTP sent to email (expires in 10 minutes — tick tock)
+- Admin-only: fetch all users (power move)
 
 ### Task Management
 - Create tasks with title, description, and priority
 - Fetch all personal tasks with optional filtering by status, priority, or search query
 - Fetch a single task by ID
-- Update task fields partially (title, body, priority) — status auto-resets to `pending` on update
+- Update task fields partially (title, body, priority) — status auto-resets to `pending` on update, because apparently you're not done yet
 - Change task status independently (`pending`, `completed`, `cancelled`)
-- Delete task
+- Delete task (for when you decide the task was a bad idea all along)
 
 ### Priority System
-Tasks support four priority levels which directly control reminder frequency:
+Tasks support four priority levels which directly control how aggressively the API guilt-trips you:
 
 | Priority | Reminders/Day | Interval  |
 |----------|--------------|-----------|
@@ -41,17 +42,19 @@ Tasks support four priority levels which directly control reminder frequency:
 | High     | 6            | 4 hours   |
 | Utmost   | 12           | 2 hours   |
 
+> Set a task to `utmost` if you truly hate yourself.
+
 ### Email Notifications
 - Email delivery via Nodemailer
 - Mailtrap integration for development testing
-- HTML-formatted task reminder emails
+- HTML-formatted task reminder emails (we put in the effort so you'd feel bad ignoring them)
 - Manual reminder trigger endpoint per task
 - `nextReminderAt` field controls automated email frequency
 
 ### Background Processing
 - Cron-based background job scans tasks for due reminders
 - Automatic reminder emails sent based on priority interval
-- Safe error handling within scheduled jobs
+- Safe error handling within scheduled jobs (it won't crash, it'll just silently judge you)
 
 ### Validation & Error Handling
 - Centralized error handling via custom `HttpError`
@@ -71,14 +74,13 @@ Tasks support four priority levels which directly control reminder frequency:
 .
 ├── controllers/
 │   ├── taskController.js          Task endpoint logic
-│   └── userController.js          User & auth endpoint logic
+│   └── userController.js          User & auth endpoint logic (login, logout, refresh — all the drama)
 ├── db/
 │   ├── tasks.json                 Task data store
-│   └── users.json                 User data store
+│   └── users.json                 User data store (refresh tokens live here too now)
 ├── middleware/
 │   ├── asyncHandler.js            Wraps async controllers for error forwarding
-│   ├── authMiddleware.js          JWT authentication — attaches req.user
-│   ├── adminMiddleware.js         Role check — admin only routes
+│   ├── authMiddleware.js          JWT auth — checks access token, silently refreshes if expired
 │   └── errorMiddleware.js         Global error handler
 ├── models/
 │   ├── errorModel.js              HttpError class
@@ -88,15 +90,14 @@ Tasks support four priority levels which directly control reminder frequency:
 │   └── userRoutes.js              User & auth endpoints
 ├── utils/
 │   ├── constants.js               PRIORITIES, TASK_STATUS constants
-│   ├── cronJobs.js                Background reminder scheduler
+│   ├── cronJobs.js                Background reminder scheduler (the nagging engine)
 │   ├── fileHelper.js              Read/write helpers for JSON stores
 │   ├── mailer.js                  Nodemailer transport config
 │   ├── reminderHelper.js          Reminder interval logic
 │   ├── sendCookie.js              Cookie setter utility
-│   ├── sendEmail.js               Email dispatch utility
-│   └── token.js                   JWT generation utility
+│   └── sendEmail.js               Email dispatch utility
 ├── server.js                      Entry point — starts the server
-├── .env                           Environment variables (never commit)
+├── .env                           Environment variables (commit this and it's over for you)
 └── package.json
 ```
 
@@ -107,6 +108,7 @@ Tasks support four priority levels which directly control reminder frequency:
 ### Prerequisites
 - Node.js v18+
 - A Mailtrap account (for email testing in development)
+- The will to actually finish your tasks (optional but recommended)
 
 ### Clone the Repo
 ```sh
@@ -127,7 +129,7 @@ Create a `.env` file in the root directory. See [Environment Variables](#environ
 npm start
 ```
 
-You're good to go. The server starts and the cron job initializes automatically.
+You're good to go. The server starts, the cron job initializes automatically, and the guilt trips begin.
 
 ---
 
@@ -142,7 +144,9 @@ NODE_ENV=development
 
 # Authentication
 JWT_SECRET=your_strong_random_secret_here
-JWT_EXPIRE=1d
+JWT_REFRESH_SECRET=your_refresh_secret_here        # new — don't skip this
+JWT_REFRESH_EXPIRE=7d
+JWT_EXPIRE=15m
 
 # Email (Mailtrap — development)
 MAIL_HOST=sandbox.smtp.mailtrap.io
@@ -152,7 +156,7 @@ MAIL_PASS=your_mailtrap_password
 MAIL_FROM=noreply@todo.dev
 ```
 
-> Never commit your `.env` file. It is already included in `.gitignore`.
+> Never commit your `.env` file. It is already in `.gitignore`. If you still commit it, that's a personal problem.
 
 ---
 
@@ -164,6 +168,18 @@ http://localhost:5000
 ```
 
 All endpoints are prefixed with `/api`.
+
+---
+
+### Authentication Flow
+
+Here's the big picture now that refresh tokens exist:
+
+1. **Login** → receive access token (15m) + refresh token (7d), both as httpOnly cookies
+2. **Make requests** → auth middleware validates your access token automatically
+3. **Access token expires** → middleware detects this, silently validates your refresh token, issues a new access token and continues your request. You won't feel a thing.
+4. **Refresh token expires** → you're getting logged out. Log back in. Skill issue.
+5. **Logout** → both cookies cleared, refresh token deleted from DB. Truly gone.
 
 ---
 
@@ -187,7 +203,6 @@ POST /api/users/register
   "id": "user-a1b2c3d4",
   "userName": "Nox",
   "email": "nox@example.com",
-  "role": "user",
   "createdAt": "2026-03-13T00:00:00.000Z"
 }
 ```
@@ -205,14 +220,13 @@ POST /api/users/login
   "password": "securepassword"
 }
 ```
-**Response `200`:** Returns user data. JWT is set as an HTTP-only cookie automatically.
+**Response `200`:** Returns user data. Access token and refresh token are set as HTTP-only cookies automatically. No token in the response body — we're not animals.
 
 ```json
 {
   "id": "user-a1b2c3d4",
   "userName": "Nox",
-  "email": "nox@example.com",
-  "role": "user"
+  "email": "nox@example.com"
 }
 ```
 
@@ -222,7 +236,7 @@ POST /api/users/login
 ```
 POST /api/users/logout
 ```
-**Auth required.** Clears the JWT cookie.
+**Auth required.** Clears both cookies and deletes the refresh token from the database.
 
 **Response `200`:**
 ```json
@@ -245,7 +259,6 @@ GET /api/users/me
   "id": "user-a1b2c3d4",
   "userName": "Nox",
   "email": "nox@example.com",
-  "role": "user",
   "createdAt": "2026-03-13T00:00:00.000Z"
 }
 ```
@@ -266,7 +279,7 @@ PATCH /api/users/edit-me
   "password": "newpassword"
 }
 ```
-**Response `200`:** Returns updated user object (no password field).
+**Response `200`:** Returns updated user object (no password, no tokens — just the clean stuff).
 
 ---
 
@@ -288,7 +301,7 @@ Sends a 4-digit OTP to the provided email. OTP expires in 10 minutes.
   "message": "If that email exists, an OTP has been sent."
 }
 ```
-> The response is intentionally the same whether the email exists or not — this prevents email enumeration.
+> The response is intentionally identical whether the email exists or not — we don't help hackers enumerate accounts.
 
 ---
 
@@ -319,7 +332,7 @@ GET /api/users/
 ```
 **Auth + Admin required.**
 
-**Response `200`:** Returns array of all users (no password fields).
+**Response `200`:** Returns array of all users (no passwords, no tokens — nothing spicy).
 
 ---
 
@@ -389,7 +402,7 @@ GET /api/tasks/:id
 ```
 PATCH /api/tasks/:id
 ```
-**Auth required.** All fields optional — send only what you want to update. Status always resets to `pending` on any update.
+**Auth required.** All fields optional. Status always resets to `pending` on any update — the API refuses to let you pretend you're done.
 
 **Body:**
 ```json
@@ -445,7 +458,7 @@ DELETE /api/tasks/:id
 ```
 POST /api/tasks/:id/reminder
 ```
-**Auth required.** Triggers an immediate reminder email for the specified task and resets the `nextReminderAt` timer.
+**Auth required.** Triggers an immediate reminder email and resets the `nextReminderAt` timer. For when you want to be yelled at right now.
 
 **Response `200`:**
 ```json
@@ -458,12 +471,11 @@ POST /api/tasks/:id/reminder
 
 ## Known Issues & Limitations
 
-- **JSON file storage** — the current persistence layer uses flat JSON files. This is not suitable for concurrent writes or production scale. A database (PostgreSQL, MongoDB) should replace it before any production deployment.
-- **No rate limiting** — the forgot-password endpoint is currently unprotected against brute-force or spam requests. A rate limiter (e.g. `express-rate-limit`) should be added before going live.
-- **OTP is stored in plaintext** — the reset OTP is stored directly in `users.json`. For production, OTPs should be hashed before storage.
-- **No refresh token** — JWT expires in 1 day with no refresh mechanism. Users are logged out after expiry with no silent renewal.
-- **Cron job runs in-process** — the reminder scheduler runs inside the Express process. For production, this should be moved to a dedicated worker or job queue (e.g. BullMQ).
-- **`fetchAllTasks`** — exported from `taskController.js` but not yet wired to a route.
+- **JSON file storage** — flat JSON files are not built for scale or concurrent writes. Replace with a real database (PostgreSQL, MongoDB) before anything near production.
+- **No rate limiting on forgot-password** — this endpoint is currently unguarded. A determined attacker (or a very confused user) could spam it freely. Add `express-rate-limit` before going live.
+- **OTP stored in plaintext** — the reset OTP sits raw in `users.json`. Hash it before production. Please.
+- **Cron job runs in-process** — the reminder scheduler lives inside the Express process. For production, move it to a dedicated worker or job queue (BullMQ, etc.).
+- **`fetchAllTasks`** — exported from `taskController.js` but not yet wired to a route. It exists. It waits.
 
 ---
 
@@ -479,9 +491,9 @@ Contributions are welcome. To contribute:
 
 ### Guidelines
 - Follow the existing code style — async/await, `HttpError`/`HttpMessage` for all responses
-- Never commit `.env` or any secrets
-- Test your endpoints with Postman or the existing test suite before submitting a PR
-- Keep PRs focused — one feature or fix per PR
+- Never commit `.env` or any secrets. Ever. We mean it.
+- Test your endpoints with Postman before submitting a PR
+- Keep PRs focused — one feature or fix per PR. We're not reviewing a novel.
 
 ---
 

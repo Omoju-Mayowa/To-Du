@@ -5,10 +5,11 @@ import HttpMessage from "../models/sucessModel.js";
 import jwt from "jsonwebtoken";
 import sendCookie from "../utils/sendCookie.js";
 import sendEmail from "../utils/sendEmail.js";
-import { environment } from "../environment.js";
+import { ACCESS_TOKEN_MAX_AGE, environment, REFRESH_TOKEN_MAX_AGE } from "../environment.js";
 import { v4 as uuid } from "uuid";
 
-const secret = environment.JWT_SECRET;
+const accessSecret = environment.JWT_SECRET;
+const refreshSecret = environment.JWT_REFRESH_SECRET;
 
 const hashOptions = {
   type: argon2.argon2id,
@@ -27,13 +28,48 @@ const generateOTP = () => {
 };
 
 const safeUser = (user) => {
-  const { password, otp, otpExpiresAt, ...rest } = user;
+  const { password, otp, otpExpiresAt, refreshToken, ...rest } = user;
   return rest;
 };
 
 // ----------------------------------------------------------------
 // AUTH
 // ----------------------------------------------------------------
+
+const refreshAccessToken = async (req, res, next) => {
+  const token = req.cookies?.refreshToken;
+
+  if (!token)
+    return next(new HttpError("No refresh token, please log in.", 401));
+
+  try {
+    const decoded = jwt.verify(token, environment.JWT_REFRESH_SECRET);
+
+    const users = await readUsers();
+    const user = users.find((u) => u.id === decoded.id);
+
+    if (!user || user.refreshToken !== token)
+      return next(new HttpError("Invalid refresh token.", 403));
+
+    // Issue new access token
+    const newAccessToken = jwt.sign(
+      { id: user.id, userName: user.userName, email: user.email },
+      environment.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    return res.status(200).json({ message: "Access token refreshed." });
+  } catch {
+    return next(new HttpError("Invalid or expired refresh token.", 403));
+  }
+};
 
 const registerUser = async (req, res, next) => {
   const { userName, email, password } = req.body;
@@ -56,7 +92,6 @@ const registerUser = async (req, res, next) => {
       userName,
       email,
       password: hashedPassword,
-      role: "user",
       otp: null,
       otpExpiresAt: null,
       createdAt: new Date(),
@@ -75,9 +110,8 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (!email || !password)
     return next(new HttpError("Fill in all fields.", 422));
-  }
 
   try {
     const users = await readUsers();
@@ -88,25 +122,61 @@ const loginUser = async (req, res, next) => {
     const passwordMatch = await argon2.verify(user.password, password);
     if (!passwordMatch) return next(new HttpError("Invalid credentials.", 401));
 
-    const token = jwt.sign(
-      { id: user.id, userName: user.userName, email: user.email, role: user.role },
-      secret,
-      { expiresIn: "1d" }
+    const accessToken = jwt.sign(
+      { id: user.id, userName: user.userName, email: user.email },
+      environment.JWT_SECRET,
+      { expiresIn: "15m" }
     );
 
-    return sendCookie(res, token, 200, safeUser(user));
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      environment.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // Save refresh token to user in JSON DB
+    user.refreshToken = refreshToken;
+    await writeUsers(users); // assumes you have a writeUsers function
+
+    // Set both cookies
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 mins
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return res.status(200).json(safeUser(user));
   } catch (err) {
     return next(new HttpError(err.message, 500));
   }
 };
 
-const logout = async (req, res, next) => {
-  res.clearCookie('accessToken');
+const logoutUser = async (req, res, next) => {
+  try {
+    const users = await readUsers();
+    const user = users.find((u) => u.id === req.user.id);
 
-  const response = new HttpMessage("Logged out successfully.", 200, null);
-  return res.status(response.statusCode).json(response.data);
+    if (user) {
+      user.refreshToken = null; // invalidate in DB
+      await writeUsers(users);
+    }
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({ message: "Logged out successfully." });
+  } catch (err) {
+    return next(new HttpError(err.message, 500));
+  }
 };
-
 // ----------------------------------------------------------------
 // USER
 // ----------------------------------------------------------------
@@ -254,7 +324,8 @@ export {
   editUser,
   registerUser,
   loginUser,
-  logout,
+  logoutUser,
   forgotPassword,
   resetPassword,
+  refreshAccessToken
 };
