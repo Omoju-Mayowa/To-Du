@@ -21,19 +21,15 @@ const createTask = async (req, res, next) => {
   const { title, body, priority } = req.body;
 
   let eMessage;
-  let userID = req.user.id;
+  let currentUserID = req.user.id;
 
   if (!title || !body || !priority) {
-    eMessage = new HttpError("Fill in all fields.", 400);
+    eMessage = new HttpError("Fill in all fields.", 422);
     return next(eMessage);
   }
 
   if (!PRIORITIES.includes(priority)) {
-    eMessage = new HttpError(
-      "Invalid Priority. You can only use low, medium, high, utmost",
-      400,
-    );
-    return next(eMessage);
+    return next(new HttpError(`Invalid Priority. Must be one of ${PRIORITIES.join(", ")}`, 400))
   }
 
   const intervalHours = 24 / getReminderLimit(priority);
@@ -44,7 +40,7 @@ const createTask = async (req, res, next) => {
     body: body,
     priority: priority,
     status: "pending",
-    userID: userID,
+    userID: currentUserID,
     createdAt: new Date(),
     nextReminderAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000),
   };
@@ -58,17 +54,6 @@ const createTask = async (req, res, next) => {
   return res.status(response.statusCode).json(response.data);
 };
 
-const fetchAllTasks = async (req, res, next) => {
-  try {
-    let tasks = await readTasks();
-    
-    const response = new HttpMessage("All Tasks Fetched Successfully.", 200, tasks);
-    return res.status(response.statusCode).json(response.data);
-  } catch {
-    
-  }
-}
-
 const fetchTasks = async (req, res, next) => {
   try {
     const { status, priority, search } = req.query;
@@ -78,7 +63,7 @@ const fetchTasks = async (req, res, next) => {
     if (search) {
       const searchT = search.toLowerCase();
       tasks = tasks.filter(
-        (t) => t.title && t.title.toLowerCase().includes(searchT) && t.userID === currentUserID,
+        (t) => t.title && t.title.toLowerCase().includes(searchT) && t.userID === currentUserID
       );
     }
   
@@ -104,6 +89,7 @@ const fetchTask = async (req, res, next) => {
   const { id } = req.params;
   let tasks = await readTasks();
   let task;
+  const currentUserID = req.user?.id
 
   if (!id) {
     const response = new HttpError("Task ID required.", 400);
@@ -116,53 +102,132 @@ const fetchTask = async (req, res, next) => {
     const response = new HttpError("Task does not exist.");
     return next(response);
   }
+  
+  if(currentUserID !== task.userID) return next(new HttpError("Unauthorized.", 403))
 
   const response = new HttpMessage("Task found.", 201, task);
   return res.status(response.statusCode).json(response.data);
 };
 
 const updateTask = async (req, res, next) => {
-  res.status(200).send("Task updated");
+  const { id } = req.params;
+  const currentUserID = req.user?.id
+  const { title, body, priority } = req.body
+  
+  if (!title && !body && !priority) {
+    return next(new HttpError("Fill in at least one field.", 422))
+  } 
+  if (priority && !PRIORITIES.includes(priority)) {
+    return next(new HttpError(`Invalid Priority. Must be one of ${PRIORITIES.join(", ")}`, 400))
+  }
+  
+  const reminderPriority = priority ?? oldTask.priority;
+  const intervalHours = 24 / getReminderLimit(reminderPriority);
+
+  
+  let tasks = await readTasks();
+
+  const taskIndex = tasks.findIndex((t) => t.id === id)
+
+  if(taskIndex === -1) return next(new HttpError("Task not found.", 404))
+
+  const oldTask = tasks[taskIndex];
+
+  if(currentUserID !== oldTask.userID) {
+    return next(new HttpError("Unauthorized.", 400))
+  }
+
+  const updatedTask = {
+    ...oldTask,
+    title: title ?? oldTask.title,
+    body: body ?? oldTask.body,
+    priority: priority ?? oldTask.priority,
+    status: "pending",
+    userID: currentUserID,
+    updatedAt: new Date(),
+    nextReminderAt: new Date(Date.now() + intervalHours * 60 * 60 * 1000)
+  }
+
+  tasks[taskIndex] = updatedTask
+  await writeTasks(tasks);
+
+  const response = new HttpMessage("Task Updated Sucessfully", 200, updatedTask);
+  return res.status(response.statusCode).json(response.data);
+
 };
 
 const deleteTask = async (req, res, next) => {
   const { id } = req.params;
+  const currentUserID = req.user?.id
   let tasks = await readTasks();
     
   const taskExists = tasks.find((t) => t.id === id);
 
-  if (!taskExists) {
-    return next(new HttpError("This task does not exist.", 404));
-  }
-
+  if (!taskExists) return next(new HttpError("Task not found.", 404));
+  if(currentUserID.toString() !== taskExists.userID) return next(new HttpError("Unauthorized.", 403))
+  
   const updatedTasks = tasks.filter((t) => t.id !== id);
 
   await writeTasks(updatedTasks);
 
-  const response = new HttpMessage("Found the task", 201, null);
+  const response = new HttpMessage("Task deleted successfully.", 200, null);
   return res.status(response.statusCode).json(response.data);
 };
 
 // Changing status
 const taskStatus = async (req, res, next) => {
-  res.status(200).send("Task Re-opened.");
-};
+  const { id } = req.params;
+  const currentUserID = req.user?.id;
+  const { status } = req.body;
 
+  if (!status) return next(new HttpError("Please provide a status.", 422));
+
+  if (!TASK_STATUS.includes(status)) {
+    return next(new HttpError(`Invalid status. Must be one of: ${TASK_STATUS.join(", ")}`, 400));
+  }
+
+  let tasks = await readTasks();
+
+  const taskIndex = tasks.findIndex((t) => t.id === id);
+
+  if (taskIndex === -1) return next(new HttpError("Task not found.", 404));
+
+  const oldTask = tasks[taskIndex];
+
+  if (currentUserID !== oldTask.userID) {
+    return next(new HttpError("Unauthorized.", 403));
+  }
+
+  if (oldTask.status === status) {
+    return next(new HttpError(`Task is already ${status}.`, 400));
+  }
+
+  const updatedTask = {
+    ...oldTask,
+    status,
+    updatedAt: new Date(),
+  };
+
+  tasks[taskIndex] = updatedTask;
+  await writeTasks(tasks);
+
+  const response = new HttpMessage(`Task marked as ${status}.`, 200, updatedTask);
+  return res.status(response.statusCode).json(response.data);
+};
 // TODO
 const sendReminder = async (req, res, next) => {
   try {
     const tasks = await readTasks();
     const users = await readUsers();
+    const currentUserID = req.user?.id
     const { id } = req.params;
     let message;
     let eMessage;
 
     const task = tasks.find((t) => t.id === id);
-
-    if (!task) {
-      eMessage = new HttpError("Task not found.", 404);
-      return next(eMessage);
-    }
+  
+    if (!task) return next(new HttpError("Task not found.", 404));
+    if(currentUserID !== task.userID) return next(new HttpError("Unauthorized.", 403))
 
     // Ensure user owns the task
     if (task.userID !== req.user.id) {
@@ -216,5 +281,4 @@ export {
   deleteTask,
   taskStatus,
   sendReminder,
-  fetchAllTasks
 };
