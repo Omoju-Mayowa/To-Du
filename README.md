@@ -94,7 +94,6 @@ Tasks support four priority levels which directly control how aggressively the A
 │   ├── fileHelper.js              Read/write helpers for JSON stores
 │   ├── mailer.js                  Nodemailer transport config
 │   ├── reminderHelper.js          Reminder interval logic
-│   ├── sendCookie.js              Cookie setter utility
 │   └── sendEmail.js               Email dispatch utility
 ├── server.js                      Entry point — starts the server
 ├── .env                           Environment variables (commit this and it's over for you)

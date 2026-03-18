@@ -3,7 +3,6 @@ import argon2 from "argon2";
 import { readUsers, writeUsers } from "../utils/fileHelper.js";
 import HttpMessage from "../models/sucessModel.js";
 import jwt from "jsonwebtoken";
-import sendCookie from "../utils/sendCookie.js";
 import sendEmail from "../utils/sendEmail.js";
 import { ACCESS_TOKEN_MAX_AGE, environment, REFRESH_TOKEN_MAX_AGE } from "../environment.js";
 import { v4 as uuid } from "uuid";
@@ -124,13 +123,13 @@ const loginUser = async (req, res, next) => {
 
     const accessToken = jwt.sign(
       { id: user.id, userName: user.userName, email: user.email },
-      environment.JWT_SECRET,
+      accessSecret,
       { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
       { id: user.id },
-      environment.JWT_REFRESH_SECRET,
+      refreshSecret,
       { expiresIn: "7d" }
     );
 

@@ -1,31 +1,17 @@
-import "dotenv/config";
-import express from "express";
 import chalk from "chalk";
-import userRoutes from "./routes/userRoutes.js";
-import cookieParser from "cookie-parser";
-import taskRoutes from "./routes/taskRoutes.js";
+import app from "./app.js";
 import startReminderJob from "./utils/cronJobs.js";
 import { environment } from "./environment.js";
 
 
-const app = express();
-const PORT = environment.PORT || 5001;
-
-app.use(express.json());
-app.use(cookieParser());
-// Routes
-app.use("/api/users", userRoutes);
-app.use("/api/tasks", taskRoutes);
-app.use("/api", (req, res) => {
-  res.status(200).send("Hi there, welcome to to-du");
-});
+const PORT = process.env.PORT || 5001;
 
 startReminderJob();
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   try {
     console.log(chalk.green(`Server running on port ${PORT}`));
   } catch (err) {
     console.log(chalk.red(`Error: ${err}`));
   }
-});
+})

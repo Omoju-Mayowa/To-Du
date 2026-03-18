@@ -1,10 +1,10 @@
 export const environment = {
-  PORT: process.env.PORT,
+  PORT: process.env.PORT || 5001,
   EMAIL_TOKEN: process.env.EMAIL_TOKEN,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
-  JWT_EXPIRE: process.env.JWT_EXPIRE,
-  JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE,
+  JWT_EXPIRE: process.env.JWT_EXPIRE || "15m",
+  JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE || "7d",
   REDIS_URL: process.env.REDIS_URL,
   MONGODB_URL: process.env.MONGODB_URL,
 }
