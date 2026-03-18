@@ -120,7 +120,6 @@ const updateTask = async (req, res, next) => {
   if (priority && !PRIORITIES.includes(priority)) {
     return next(new HttpError(`Invalid Priority. Must be one of ${PRIORITIES.join(", ")}`, 400))
   }
-
   let tasks = await readTasks();
 
   const taskIndex = tasks.findIndex((t) => t.id === id)

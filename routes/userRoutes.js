@@ -6,7 +6,6 @@ import { loginLimiter, userLimiter } from "../middleware/rateLimiter.js";
 import { body } from 'express-validator'
 import { validateRequest } from '../middleware/validationMiddleware.js'
 
-
 const router = Router();
 
 // GET ROUTES

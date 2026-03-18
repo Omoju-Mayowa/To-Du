@@ -9,6 +9,5 @@ export const environment = {
   MONGODB_URL: process.env.MONGODB_URL,
 }
 
-
-export const ACCESS_TOKEN_MAX_AGE = process.env.JWT_EXPIRE || "15m";
-export const REFRESH_TOKEN_MAX_AGE = process.env.JWT_REFRESH_EXPIRE || "7d";
+export const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000        // 15 mins
+export const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000  // 7 days

@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "user-036ef37f5ce14aa2a87b7e9514bfc28f",
+    "userName": "Test-User",
+    "email": "user@test2.com",
+    "password": "$argon2id$v=19$m=65536,t=5,p=5$cG4uwuQQBBsogOKlszVo6w$BIGLNR9Nh3kIcb3ykVscGRBp5XkZmQkxpYTp8QW9Fp3by/OImUS2uS3xtcSB2OvT",
+    "otp": null,
+    "otpExpiresAt": null,
+    "createdAt": "2026-03-18T16:35:40.530Z",
+    "refreshToken": null
+  }
+]

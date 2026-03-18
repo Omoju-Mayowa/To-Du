@@ -38,18 +38,17 @@ router.route("/")
 router.post("/:id/reminder", auth, taskLimiter, asyncHandler(sendReminder));
 // GET ROUTES
 router.route("/:id")
-  .get(auth, taskLimiter, asyncHandler(fetchTask))
-  .patch(
-    auth, 
-    taskLimiter,
-    [
-        body('title').notEmpty().withMessage('Title is required').trim().escape(),
-        body('body').notEmpty().withMessage('Task description is required').trim().escape(),
-        body('priority').isIn(['low', 'medium', 'high', 'utmost']).withMessage('Priority must be low, medium, high or utmost'),
-    ],
-    validateRequest,
-    asyncHandler(updateTask)
-  );
+.patch(
+  auth, 
+  taskLimiter,
+  [
+      body('title').notEmpty().withMessage('Title is required').trim().escape(),
+      body('body').notEmpty().withMessage('Task description is required').trim().escape(),
+      body('priority').isIn(['low', 'medium', 'high', 'utmost']).withMessage('Priority must be low, medium, high or utmost'),
+  ],
+  validateRequest,
+  asyncHandler(updateTask)
+);
 router.patch(
   "/:id/status", 
   auth, 
