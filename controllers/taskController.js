@@ -281,5 +281,4 @@ export {
   deleteTask,
   taskStatus,
   sendReminder,
-  fetchAllTasks
 };

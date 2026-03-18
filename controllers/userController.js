@@ -101,10 +101,7 @@ const loginUser = async (req, res, next) => {
 };
 
 const logout = async (req, res, next) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    expires: new Date(0),
-  });
+  res.clearCookie('accessToken');
 
   const response = new HttpMessage("Logged out successfully.", 200, null);
   return res.status(response.statusCode).json(response.data);

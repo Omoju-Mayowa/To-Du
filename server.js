@@ -14,9 +14,9 @@ const PORT = environment.PORT || 5001;
 app.use(express.json());
 app.use(cookieParser());
 // Routes
-app.use("/users", userRoutes);
-app.use("/tasks", taskRoutes);
-app.use("/", (req, res) => {
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api", (req, res) => {
   res.status(200).send("Hi there, welcome to to-du");
 });
 

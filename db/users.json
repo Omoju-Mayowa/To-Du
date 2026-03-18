@@ -1,22 +1,12 @@
 [
   {
-    "id": 1,
-    "userName": "boy22",
-    "email": "boyandGirl@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$Tm1ehNxz/cZHS5NS6SVVFQ$3dT5DZV0SHpGmumDzwIdUc+PM5dRpQUEt/L+aITfxOw"
-  },
-  {
-    "id": 2,
-    "userName": "boy",
-    "email": "n0x.nyx.16@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$9l+TjtH2oZ6kCouMq41iiw$elx5IMkgAepzSEQQKnRzNcOTjhi8mWvwcyE/dbxmENM",
-    "otp": "3920",
-    "otpExpiresAt": "2026-03-13T22:54:13.339Z"
-  },
-  {
-    "id": 4,
-    "userName": "boy2",
-    "email": "boy24@gmail.com",
-    "password": "$argon2id$v=19$m=65536,t=3,p=4$mzbAFk+h2DoNUo/niZDGmg$zbldzLimFNTM53jINKrzl/mdSelQDjRxEvicz0O0OAw"
+    "id": "user-be178564aa0c4effb6fbd883841222ef",
+    "userName": "Test-User",
+    "email": "user@test2.com",
+    "password": "$argon2id$v=19$m=65536,t=5,p=5$PLlGfkeXat8HZGKOG8Ku7Q$yKgXKDMgriP8R82Btzk88upB4WMpqDIP5Qw13ujUXXppOLFqdO9/8YDpnX2RmCPl",
+    "role": "user",
+    "otp": null,
+    "otpExpiresAt": null,
+    "createdAt": "2026-03-18T12:07:26.666Z"
   }
 ]
