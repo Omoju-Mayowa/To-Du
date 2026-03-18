@@ -120,11 +120,7 @@ const updateTask = async (req, res, next) => {
   if (priority && !PRIORITIES.includes(priority)) {
     return next(new HttpError(`Invalid Priority. Must be one of ${PRIORITIES.join(", ")}`, 400))
   }
-  
-  const reminderPriority = priority ?? oldTask.priority;
-  const intervalHours = 24 / getReminderLimit(reminderPriority);
 
-  
   let tasks = await readTasks();
 
   const taskIndex = tasks.findIndex((t) => t.id === id)
@@ -132,6 +128,8 @@ const updateTask = async (req, res, next) => {
   if(taskIndex === -1) return next(new HttpError("Task not found.", 404))
 
   const oldTask = tasks[taskIndex];
+  const reminderPriority = priority ?? oldTask.priority;
+  const intervalHours = 24 / getReminderLimit(reminderPriority);
 
   if(currentUserID !== oldTask.userID) {
     return next(new HttpError("Unauthorized.", 400))

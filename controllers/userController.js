@@ -123,13 +123,13 @@ const loginUser = async (req, res, next) => {
 
     const accessToken = jwt.sign(
       { id: user.id, userName: user.userName, email: user.email },
-      environment.JWT_SECRET,
+      accessSecret,
       { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
       { id: user.id },
-      environment.JWT_REFRESH_SECRET,
+      refreshSecret,
       { expiresIn: "7d" }
     );
 
