@@ -22,11 +22,4 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ message });
 });
 
-app.use((err, req, res, next) => {
-const statusCode = Number.isInteger(err?.code) ? err.code : 500;
-const message = err?.message || "Internal Server Error";
-
-  res.status(statusCode).json({ message });
-});
-
 export default app;

@@ -47,9 +47,9 @@ beforeEach(() => {
   })
   mockSendEmail.mockResolvedValue(true)
 })
-describe('POST /users/register', () => {
+describe('POST /api/users/register', () => {
   test('should register a new user', async () => {
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'nox@example.com',
       password: 'password123',
@@ -60,12 +60,12 @@ describe('POST /users/register', () => {
   })
 
   test('should reject duplicate email', async () => {
-    await request(app).post('/users/register').send({
+    await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'nox@example.com',
       password: 'password123',
     })
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       userName: 'Nox2',
       email: 'nox@example.com',
       password: 'password123',
@@ -74,14 +74,14 @@ describe('POST /users/register', () => {
   })
 
   test('should reject missing fields', async () => {
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       email: 'nox@example.com',
     })
     expect(res.statusCode).toBe(400)
   })
 
   test('should reject invalid email', async () => {
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'notanemail',
       password: 'password123',
@@ -90,7 +90,7 @@ describe('POST /users/register', () => {
   })
 
   test('should reject short password', async () => {
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'nox@example.com',
       password: '123',
@@ -99,7 +99,7 @@ describe('POST /users/register', () => {
   })
 
   test('should escape XSS in username', async () => {
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       userName: '<script>alert("xss")</script>',
       email: 'nox@example.com',
       password: 'password123',
@@ -109,7 +109,7 @@ describe('POST /users/register', () => {
   })
 
   test('should normalize email to lowercase', async () => {
-    const res = await request(app).post('/users/register').send({
+    const res = await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'NOX@EXAMPLE.COM',
       password: 'password123',
@@ -119,9 +119,9 @@ describe('POST /users/register', () => {
   })
 })
 
-describe('POST /users/login', () => {
+describe('POST /api/users/login', () => {
   beforeEach(async () => {
-    await request(app).post('/users/register').send({
+    await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'nox@example.com',
       password: 'password123',
@@ -129,7 +129,7 @@ describe('POST /users/login', () => {
   })
 
   test('should login successfully', async () => {
-    const res = await request(app).post('/users/login').send({
+    const res = await request(app).post('/api/users/login').send({
       email: 'nox@example.com',
       password: 'password123',
     })
@@ -139,7 +139,7 @@ describe('POST /users/login', () => {
   })
 
   test('should reject wrong password', async () => {
-    const res = await request(app).post('/users/login').send({
+    const res = await request(app).post('/api/users/login').send({
       email: 'nox@example.com',
       password: 'wrongpassword',
     })
@@ -147,7 +147,7 @@ describe('POST /users/login', () => {
   })
 
   test('should reject non-existent email', async () => {
-    const res = await request(app).post('/users/login').send({
+    const res = await request(app).post('/api/users/login').send({
       email: 'ghost@example.com',
       password: 'password123',
     })
@@ -155,14 +155,14 @@ describe('POST /users/login', () => {
   })
 
   test('should reject missing fields', async () => {
-    const res = await request(app).post('/users/login').send({
+    const res = await request(app).post('/api/users/login').send({
       email: 'nox@example.com',
     })
     expect(res.statusCode).toBe(400)
   })
 
   test('should normalize email on login', async () => {
-    const res = await request(app).post('/users/login').send({
+    const res = await request(app).post('/api/users/login').send({
       email: 'NOX@EXAMPLE.COM',
       password: 'password123',
     })
@@ -170,15 +170,15 @@ describe('POST /users/login', () => {
   })
 })
 
-describe('POST /users/logout', () => {
+describe('POST /api/users/logout', () => {
   test('should logout successfully', async () => {
-    await request(app).post('/users/register').send({
+    await request(app).post('/api/users/register').send({
       userName: 'Nox',
       email: 'nox@example.com',
       password: 'password123',
     })
 
-    const loginRes = await request(app).post('/users/login').send({
+    const loginRes = await request(app).post('/api/users/login').send({
       email: 'nox@example.com',
       password: 'password123',
     })
@@ -186,7 +186,7 @@ describe('POST /users/logout', () => {
     const cookies = loginRes.headers['set-cookie']
 
     const res = await request(app)
-      .post('/users/logout')
+      .post('/api/users/logout')
       .set('Cookie', cookies)
 
     expect(res.statusCode).toBe(200)
@@ -194,7 +194,7 @@ describe('POST /users/logout', () => {
   })
 
   test('should reject logout without token', async () => {
-    const res = await request(app).post('/users/logout')
+    const res = await request(app).post('/api/users/logout')
     expect(res.statusCode).toBe(401)
   })
 })

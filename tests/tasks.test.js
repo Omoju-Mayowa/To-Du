@@ -45,9 +45,9 @@ const registerAndLogin = async ({
   email,
   password = 'password123',
 }) => {
-  await request(app).post('/users/register').send({ userName, email, password })
+  await request(app).post('/api/users/register').send({ userName, email, password })
 
-  const loginRes = await request(app).post('/users/login').send({
+  const loginRes = await request(app).post('/api/users/login').send({
     email,
     password,
   })
@@ -82,7 +82,7 @@ beforeEach(() => {
 
 describe('Task routes', () => {
   test('should reject creating a task without auth', async () => {
-    const res = await request(app).post('/tasks').send({
+    const res = await request(app).post('/api/tasks').send({
       title: 'Task 1',
       body: 'Task body',
       priority: 'medium',
@@ -98,7 +98,7 @@ describe('Task routes', () => {
     })
 
     const res = await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', cookies)
       .send({
         title: 'Do laundry',
@@ -119,7 +119,7 @@ describe('Task routes', () => {
     })
 
     const res = await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', cookies)
       .send({
         title: 'Incomplete task',
@@ -141,7 +141,7 @@ describe('Task routes', () => {
     })
 
     await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', userOne.cookies)
       .send({
         title: 'User one task',
@@ -150,7 +150,7 @@ describe('Task routes', () => {
       })
 
     await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', userTwo.cookies)
       .send({
         title: 'User two task',
@@ -159,7 +159,7 @@ describe('Task routes', () => {
       })
 
     const res = await request(app)
-      .get('/tasks')
+      .get('/api/tasks')
       .set('Cookie', userOne.cookies)
 
     expect(res.statusCode).toBe(200)
@@ -174,7 +174,7 @@ describe('Task routes', () => {
     })
 
     const createRes = await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', cookies)
       .send({
         title: 'Initial title',
@@ -185,14 +185,14 @@ describe('Task routes', () => {
     const taskId = createRes.body.id
 
     const fetchRes = await request(app)
-      .get(`/tasks/${taskId}`)
+      .get(`/api/tasks/${taskId}`)
       .set('Cookie', cookies)
 
     expect(fetchRes.statusCode).toBe(201)
     expect(fetchRes.body.id).toBe(taskId)
 
     const updateRes = await request(app)
-      .patch(`/tasks/${taskId}`)
+      .patch(`/api/tasks/${taskId}`)
       .set('Cookie', cookies)
       .send({
         title: 'Updated title',
@@ -205,7 +205,7 @@ describe('Task routes', () => {
     expect(updateRes.body.priority).toBe('utmost')
 
     const statusRes = await request(app)
-      .patch(`/tasks/${taskId}/status`)
+      .patch(`/api/tasks/${taskId}/status`)
       .set('Cookie', cookies)
       .send({ status: 'completed' })
 
@@ -220,7 +220,7 @@ describe('Task routes', () => {
     })
 
     const createRes = await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', cookies)
       .send({
         title: 'Reminder task',
@@ -229,7 +229,7 @@ describe('Task routes', () => {
       })
 
     const reminderRes = await request(app)
-      .post(`/tasks/${createRes.body.id}/reminder`)
+      .post(`/api/tasks/${createRes.body.id}/reminder`)
       .set('Cookie', cookies)
 
     expect(reminderRes.statusCode).toBe(200)
@@ -244,7 +244,7 @@ describe('Task routes', () => {
     })
 
     const createRes = await request(app)
-      .post('/tasks')
+      .post('/api/tasks')
       .set('Cookie', cookies)
       .send({
         title: 'Delete me',
@@ -253,13 +253,13 @@ describe('Task routes', () => {
       })
 
     const deleteRes = await request(app)
-      .delete(`/tasks/${createRes.body.id}`)
+      .delete(`/api/tasks/${createRes.body.id}`)
       .set('Cookie', cookies)
 
     expect(deleteRes.statusCode).toBe(200)
 
     const listRes = await request(app)
-      .get('/tasks')
+      .get('/api/tasks')
       .set('Cookie', cookies)
 
     expect(listRes.statusCode).toBe(200)
