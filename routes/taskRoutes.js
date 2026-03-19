@@ -38,6 +38,7 @@ router.route("/")
 router.post("/:id/reminder", auth, taskLimiter, asyncHandler(sendReminder));
 // GET ROUTES
 router.route("/:id")
+.get(auth, taskLimiter, asyncHandler(fetchTask))
 .patch(
   auth, 
   taskLimiter,
